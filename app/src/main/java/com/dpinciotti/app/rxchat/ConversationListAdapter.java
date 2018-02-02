@@ -65,7 +65,6 @@ public class ConversationListAdapter
     }
 
     @Override public ConversationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
         View conversationItemView = inflater.inflate(R.layout.item_conversation, parent, false);
         return new ConversationViewHolder(conversationItemView);

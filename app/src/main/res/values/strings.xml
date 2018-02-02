@@ -2,6 +2,8 @@
 
     <string name="app_name">RxChat</string>
 
+    <string name="send_message_hint">Write a message</string>
+
     <string name="conversation_channel_1">chat-charlie</string>
     <string name="conversation_name_1">Charlie Kelly</string>
     <string name="conversation_message_1">Yes, my good man, I’ll have the milk steak, boiled over hard, and your finest jelly beans…raw</string>

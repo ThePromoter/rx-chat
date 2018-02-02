@@ -7,7 +7,7 @@ public class Conversation {
     String channelId;
     String name;
     Message lastMessage;
-    @DrawableRes int iconRes;
+    @DrawableRes transient int iconRes;
 
     public Conversation(String channelId, String name, Message lastMessage, @DrawableRes int iconRes) {
         this.channelId = channelId;

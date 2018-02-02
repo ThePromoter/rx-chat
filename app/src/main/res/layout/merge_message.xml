@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:showIn="@layout/item_message_them"
+    >
+
+    <ImageView
+        android:id="@+id/person_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        tools:tint="@color/primary_dark"
+        tools:src="@drawable/ic_profile_default"
+        />
+
+    <TextView
+        android:id="@+id/message_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        tools:background="@color/accent_light"
+        tools:text="My message goes here"
+        />
+
+</merge>

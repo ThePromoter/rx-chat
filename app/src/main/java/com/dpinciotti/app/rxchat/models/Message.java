@@ -6,6 +6,7 @@ public class Message {
 
     String text;
     Date sentDate;
+    transient boolean isMe;
 
     public Message(String text, Date sentDate) {
         this.text = text;
@@ -26,5 +27,13 @@ public class Message {
 
     public void setSentDate(Date sentDate) {
         this.sentDate = sentDate;
+    }
+
+    public boolean isMe() {
+        return isMe;
+    }
+
+    public void setMe(boolean me) {
+        isMe = me;
     }
 }

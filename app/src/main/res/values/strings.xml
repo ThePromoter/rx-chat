@@ -1,0 +1,25 @@
+<resources>
+
+    <string name="app_name">RxChat</string>
+
+    <string name="conversation_channel_1">chat-charlie</string>
+    <string name="conversation_name_1">Charlie Kelly</string>
+    <string name="conversation_message_1">Yes, my good man, I’ll have the milk steak, boiled over hard, and your finest jelly beans…raw</string>
+
+    <string name="conversation_channel_2">chat-dennis</string>
+    <string name="conversation_name_2">Dennis Reynolds</string>
+    <string name="conversation_message_2">I AM THE GOLDEN GOD!</string>
+
+    <string name="conversation_channel_3">chat-frank</string>
+    <string name="conversation_name_3">Frank Reynolds</string>
+    <string name="conversation_message_3">I would always eat the cat food</string>
+
+    <string name="conversation_channel_4">chat-dee</string>
+    <string name="conversation_name_4">Dee Reynolds</string>
+    <string name="conversation_message_4">When I\'m doing good in the game, I\'m doing good in life.</string>
+
+    <string name="conversation_channel_5">chat-mac</string>
+    <string name="conversation_name_5">Mac</string>
+    <string name="conversation_message_5">I\'m cultivating mass!</string>
+
+</resources>

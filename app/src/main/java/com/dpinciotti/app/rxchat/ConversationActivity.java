@@ -16,18 +16,19 @@ import com.dpinciotti.app.rxchat.services.ConversationCache;
 import com.dpinciotti.app.rxchat.services.PubNubManager;
 import com.dpinciotti.app.rxchat.utils.OnTextChangedListener;
 import com.google.gson.Gson;
-import com.pubnub.api.PubNub;
-import com.pubnub.api.callbacks.PNCallback;
-import com.pubnub.api.callbacks.SubscribeCallback;
-import com.pubnub.api.models.consumer.PNPublishResult;
-import com.pubnub.api.models.consumer.PNStatus;
-import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
-import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
 
 import java.util.Calendar;
 import java.util.Objects;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.Nullable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.internal.schedulers.IoScheduler;
 
 public class ConversationActivity
     extends AppCompatActivity {
@@ -37,12 +38,17 @@ public class ConversationActivity
 
     private ConversationAdapter adapter;
     private ConversationCache conversationCache;
-    private Gson gson;
+    private PubNubManager pubNubManager;
 
     private String channelId;
     private EditText messageText;
     private FloatingActionButton sendButton;
+
     @Nullable private Message messageBeingSent;
+    @Nullable private CompositeDisposable subscriptions = new CompositeDisposable();
+    private Gson gson = new Gson();
+    private Scheduler ioThread = new IoScheduler();
+    private Scheduler uiThread = AndroidSchedulers.mainThread();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +68,33 @@ public class ConversationActivity
         conversationRecycler.setAdapter(adapter);
         conversationRecycler.setLayoutManager(new LinearLayoutManager(this));
 
-        messageText = findViewById(R.id.send_message_text);
-        messageText.addTextChangedListener((OnTextChangedListener) (s, start, before, count) -> toggleSendButton(s.length() > 0));
-
         sendButton = findViewById(R.id.send_message_button);
         sendButton.setEnabled(false);
         sendButton.setOnClickListener(this::sendMessage);
 
-        gson = new Gson();
-        listenForMessages();
+        messageText = findViewById(R.id.send_message_text);
+
+        pubNubManager = PubNubManager.getInstance(this);
+
+        // Listen for text changes, and toggle the send button depending on if there's text or not
+        Disposable textChangedSubscription = textChangedObservable(messageText)
+            .map(text -> text.length() > 0)
+            .subscribe(this::toggleSendButton);
+
+        // Begin listening for new messages
+        Disposable listenerSubscription = listenForMessages();
+
+        subscriptions.addAll(textChangedSubscription, listenerSubscription);
+    }
+
+    @Override protected void onDestroy() {
+        super.onDestroy();
+        pubNubManager.disconnect();
+        subscriptions.dispose();
+    }
+
+    private Flowable<String> textChangedObservable(EditText editText) {
+        return Flowable.create(emitter -> editText.addTextChangedListener((OnTextChangedListener) (s, start, before, count) -> emitter.onNext(s.toString())), BackpressureStrategy.LATEST);
     }
 
     public void toggleSendButton(boolean enabled) {
@@ -93,66 +117,36 @@ public class ConversationActivity
         }
     }
 
-    public void sendMessage(View view) {
-        // Cut off the milliseconds to avoid rounding errors
-        Calendar now = Calendar.getInstance();
-        now.set(Calendar.MILLISECOND, 0);
-
-        Message newMessage = new Message(messageText.getText().toString(), now.getTime());
-        newMessage.setMe(true);
-        PubNubManager.getInstance(this)
-                     .sendMessage(channelId, newMessage, new PNCallback<PNPublishResult>() {
-                         @Override public void onResponse(PNPublishResult result, PNStatus status) {
-                             if (status.isError()) {
-                                 Log.e(LOG_TAG, "Error sending message");
-                             } else {
-                                 Log.d(LOG_TAG, "Message sent successfully");
-                             }
-                         }
-                     });
-        messageText.getText().clear();
-        messageBeingSent = newMessage;
+    private Disposable listenForMessages() {
+        return pubNubManager.messageReceivedFlowable(channelId)
+                            .subscribeOn(ioThread)
+                            .observeOn(uiThread)
+                            .filter(pubNubMessage -> Objects.equals(pubNubMessage.getChannel(), channelId))
+                            .map(pubNubMessage -> gson.fromJson(pubNubMessage.getMessage(), Message.class))
+                            .doOnNext(message -> Log.d(LOG_TAG, "Message received: " + message))
+                            .filter(message -> !message.equals(messageBeingSent))
+                            .doOnNext(message -> conversationCache.saveMessage(channelId, message))
+                            .subscribe(adapter::addMessage);
     }
 
-    private void listenForMessages() {
-        PubNubManager.getInstance(this)
-                     .listenToChannel(channelId, new SubscribeCallback() {
-                         @Override
-                         public void status(PubNub pubnub, PNStatus status) {
-                             switch (status.getCategory()) {
-                                 case PNUnexpectedDisconnectCategory:
-                                     // This event happens when radio / connectivity is lost
-                                     Log.e(LOG_TAG, "Connectivity lost");
-                                     break;
-                                 case PNConnectedCategory:
-                                     // This event happens when we're successfully connected
-                                     Log.d(LOG_TAG, "Successfully connected to channel");
-                                     break;
-                                 case PNReconnectedCategory:
-                                     // This event happens when radio / connectivity is lost, then regained
-                                     Log.d(LOG_TAG, "Successfully reconnected to channel");
-                                     break;
-                             }
-                         }
+    public void sendMessage(View view) {
+        Disposable messageSendSubscription =
+            Single.just(messageText.getText().toString())
+                  .subscribeOn(ioThread)
+                  .observeOn(uiThread)
+                  .zipWith(Single.just(Calendar.getInstance())
+                                 // Cut off the milliseconds to avoid rounding errors
+                                 .doOnSuccess(now -> now.set(Calendar.MILLISECOND, 0)),
+                           (text, now) -> new Message(text, now.getTime()))
+                  .doOnSuccess(newMessage -> messageBeingSent = newMessage)
+                  .flatMap(newMessage -> pubNubManager.sendMessage(channelId, newMessage))
+                  .doOnError(throwable -> Log.e(LOG_TAG, "Error sending message", throwable))
+                  .doOnSuccess(result -> Log.d(LOG_TAG, "Message sent successfully"))
+                  .doOnSuccess(newMessage -> newMessage.setMe(true))
+                  .doOnSuccess(newMessage -> conversationCache.saveMessage(channelId, newMessage))
+                  .subscribe(message -> adapter.addMessage(message));
 
-                         @Override
-                         public void message(PubNub pubnub, PNMessageResult message) {
-                             if (Objects.equals(message.getChannel(), channelId)) {
-                                 Log.d(LOG_TAG, "Message received: " + message.getMessage());
-                                 Message chatMessage = gson.fromJson(message.getMessage(), Message.class);
-                                 // If the message being sent is equal to this one, it's from me
-                                 if (chatMessage.equals(messageBeingSent)) chatMessage.setMe(true);
-                                 conversationCache.saveMessage(channelId, chatMessage);
-
-                                 // Need to remember to run this on the UI thread!
-                                 runOnUiThread(() -> adapter.addMessage(chatMessage));
-                             }
-                         }
-
-                         @Override
-                         public void presence(PubNub pubnub, PNPresenceEventResult presence) {
-
-                         }
-                     });
+        subscriptions.add(messageSendSubscription);
+        messageText.getText().clear();
     }
 }

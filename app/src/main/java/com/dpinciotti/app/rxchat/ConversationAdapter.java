@@ -54,7 +54,8 @@ public class ConversationAdapter
 
     public void addMessage(Message message) {
         messages.add(message);
-        notifyItemInserted(messages.size() - 1);
+        // Call this instead of notifyItemInserted so we can update timestamps
+        notifyDataSetChanged();
     }
 
     @Override public int getItemViewType(int position) {

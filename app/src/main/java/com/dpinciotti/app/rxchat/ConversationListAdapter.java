@@ -3,7 +3,6 @@ package com.dpinciotti.app.rxchat;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +11,9 @@ import android.widget.TextView;
 
 import com.dpinciotti.app.rxchat.models.Conversation;
 import com.dpinciotti.app.rxchat.models.Message;
+import com.dpinciotti.app.rxchat.utils.TimeUtils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class ConversationListAdapter
@@ -78,17 +77,14 @@ public class ConversationListAdapter
         Message lastMessage = conversation.getLastMessage();
         if (lastMessage != null) {
             vh.lastMessageText.setText(lastMessage.getText());
-            vh.lastMessageDate.setText(DateUtils.getRelativeTimeSpanString(lastMessage.getSentDate().getTime(),
-                                                                           Calendar.getInstance().getTimeInMillis(),
-                                                                           DateUtils.MINUTE_IN_MILLIS));
+            vh.lastMessageDate.setText(TimeUtils.getTimeSpanString(context, lastMessage.getSentDate().getTime(), true));
         }
 
         if (conversation.getIconRes() != 0) {
             vh.personImage.setImageResource(conversation.getIconRes());
         } else {
             vh.personImage.setImageResource(R.drawable.ic_profile_default);
-            vh.personImage.setColorFilter(ContextCompat.getColor(context, R.color.primary_dark),
-                                          android.graphics.PorterDuff.Mode.MULTIPLY);
+            vh.personImage.setColorFilter(ContextCompat.getColor(context, R.color.primary_dark));
         }
 
         vh.container.setOnClickListener(v -> listener.conversationClicked(conversation));

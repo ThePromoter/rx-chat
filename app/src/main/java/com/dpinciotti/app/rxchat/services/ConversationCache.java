@@ -37,22 +37,22 @@ public class ConversationCache {
         saveConversation(new Conversation(context.getString(R.string.conversation_channel_1), context.getString(R.string.conversation_name_1), newestMessage, R.drawable.ic_profile_charlie));
         saveMessage(context.getString(R.string.conversation_channel_1), newestMessage);
 
-        calendar.add(Calendar.MINUTE, -13);
+        calendar.add(Calendar.MINUTE, -67);
         newestMessage = new Message(context.getString(R.string.conversation_message_2), calendar.getTime());
         saveConversation(new Conversation(context.getString(R.string.conversation_channel_2), context.getString(R.string.conversation_name_2), new Message(context.getString(R.string.conversation_message_2), calendar.getTime()), R.drawable.ic_profile_dennis));
         saveMessage(context.getString(R.string.conversation_channel_2), newestMessage);
 
-        calendar.add(Calendar.MINUTE, -20);
+        calendar.add(Calendar.HOUR, -5);
         newestMessage = new Message(context.getString(R.string.conversation_message_3), calendar.getTime());
         saveConversation(new Conversation(context.getString(R.string.conversation_channel_3), context.getString(R.string.conversation_name_3), new Message(context.getString(R.string.conversation_message_3), calendar.getTime()), R.drawable.ic_profile_frank));
         saveMessage(context.getString(R.string.conversation_channel_3), newestMessage);
 
-        calendar.add(Calendar.HOUR, -4);
+        calendar.add(Calendar.DATE, -4);
         newestMessage = new Message(context.getString(R.string.conversation_message_4), calendar.getTime());
         saveConversation(new Conversation(context.getString(R.string.conversation_channel_4), context.getString(R.string.conversation_name_4), new Message(context.getString(R.string.conversation_message_4), calendar.getTime()), R.drawable.ic_profile_dee));
         saveMessage(context.getString(R.string.conversation_channel_4), newestMessage);
 
-        calendar.add(Calendar.DATE, -2);
+        calendar.add(Calendar.DATE, -17);
         newestMessage = new Message(context.getString(R.string.conversation_message_5), calendar.getTime());
         saveConversation(new Conversation(context.getString(R.string.conversation_channel_5), context.getString(R.string.conversation_name_5), new Message(context.getString(R.string.conversation_message_5), calendar.getTime()), R.drawable.ic_profile_mac));
         saveMessage(context.getString(R.string.conversation_channel_5), newestMessage);

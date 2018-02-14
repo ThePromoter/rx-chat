@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.dpinciotti.app.rxchat.models.Conversation;
 import com.dpinciotti.app.rxchat.models.Message;
+import com.dpinciotti.app.rxchat.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +26,13 @@ public class ConversationAdapter
 
         ImageView personImage;
         TextView message;
+        TextView messageDate;
 
         public MessageViewHolder(View itemView) {
             super(itemView);
             personImage = itemView.findViewById(R.id.person_icon);
             message = itemView.findViewById(R.id.message_text);
+            messageDate = itemView.findViewById(R.id.message_date);
         }
     }
 
@@ -82,11 +85,12 @@ public class ConversationAdapter
 
         if (message.isMe() || conversation.getIconRes() == 0) {
             vh.personImage.setImageResource(R.drawable.ic_profile_default);
-            vh.personImage.setColorFilter(ContextCompat.getColor(context, R.color.primary_dark),
-                                          android.graphics.PorterDuff.Mode.MULTIPLY);
+            vh.personImage.setColorFilter(ContextCompat.getColor(context, R.color.primary_dark));
         } else {
             vh.personImage.setImageResource(conversation.getIconRes());
         }
+
+        vh.messageDate.setText(TimeUtils.getTimeSpanString(context, message.getSentDate().getTime(), true));
     }
 
     public Message getItem(int position) {

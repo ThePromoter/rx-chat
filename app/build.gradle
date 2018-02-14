@@ -28,7 +28,7 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     implementation 'com.android.support:design:26.1.0'
 
-    implementation 'com.pusher:pusher-java-client:1.6.0'
+    implementation 'com.pubnub:pubnub-gson:4.18.0'
 
     implementation 'io.reactivex.rxjava2:rxjava:2.1.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'

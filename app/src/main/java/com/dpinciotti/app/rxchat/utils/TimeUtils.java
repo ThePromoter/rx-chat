@@ -21,7 +21,9 @@ public class TimeUtils {
         long now = new Date().getTime();
         long duration = now - time;
 
-        if (duration < DateUtils.HOUR_IN_MILLIS) {
+        if (duration <= DateUtils.SECOND_IN_MILLIS) {
+            return "just now";
+        } else if (duration < DateUtils.HOUR_IN_MILLIS) {
             return DateUtils.getRelativeTimeSpanString(time, now, 0).toString();
         } else if (DateUtils.isToday(time)) {
             SimpleDateFormat timeInstance;

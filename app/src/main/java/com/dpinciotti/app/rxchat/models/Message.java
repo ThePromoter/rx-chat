@@ -1,6 +1,7 @@
 package com.dpinciotti.app.rxchat.models;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class Message {
 
@@ -22,6 +23,7 @@ public class Message {
     }
 
     public Date getSentDate() {
+        if (sentDate == null) sentDate = new Date();
         return sentDate;
     }
 
@@ -35,5 +37,18 @@ public class Message {
 
     public void setMe(boolean me) {
         isMe = me;
+    }
+
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Message message = (Message) o;
+        return Objects.equals(text, message.text) &&
+               Objects.equals(sentDate, message.sentDate);
+    }
+
+    @Override public int hashCode() {
+
+        return Objects.hash(text, sentDate);
     }
 }
